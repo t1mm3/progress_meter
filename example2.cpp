@@ -21,7 +21,7 @@ size_t get_alloc_size() {
 }
 
 size_t task() {
-	int num_alloc = rand() % 8;
+	int num_alloc = rand() % 16;
 	if (num_alloc < 0) {
 		num_alloc = -num_alloc;
 	}
