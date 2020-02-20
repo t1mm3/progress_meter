@@ -12,6 +12,12 @@
 #include <string.h>
 #include <iostream>
 
+#if 0
+#define LOG(...) printf(__VA_ARGS__)
+#else
+#define LOG(...)
+#endif
+
 struct ProgressMeter {
 	template<size_t N, typename T>
 	struct Window {
@@ -91,7 +97,7 @@ private:
 	const double report_sec = 2.0;
 
 	//! Refresh every x secs
-	const double refresh_sec = report_sec / 8.0;
+	const double refresh_sec = report_sec / 100.0;
 
 	const size_t warmup_iterations = 10;
 	const size_t min_granularity = 1;
@@ -103,14 +109,14 @@ private:
 	void __refresh() {
 		clock_t curr_clock = clock();
 
-		printf("refresh\n");
+		LOG("refresh\n");
 
 		if (has_last) {
 			const bool warmup_mode = 
 				warmup_counter < warmup_iterations;
 			const double diff_sec = double(curr_clock - last_clock)
 				/ CLOCKS_PER_SEC;
-			const double speed = diff_sec / (num_current - last_tick);
+			const double speed = diff_sec / (double)(num_current - last_tick);
 
 			speed_window.add(speed);
 			warmup_counter++;
@@ -126,30 +132,30 @@ private:
 				bool lo = speed/max_divergence < avg;
 				bool hi = avg < max_divergence*speed;
 
-				printf("Too far off, clear window.\n"
+				LOG("Too far off, clear window.\n"
 					"Avg %f, Speed %f, between %f, %f, lo %d, hi %d\n",
 					avg, speed, speed/max_divergence,
 					max_divergence*speed, lo, hi);
 #endif
 				warmup_counter = 0;
+			} else {
+				LOG("Diff %f Avg %f, Speed %f, Dist %f\n",
+					diff_sec, avg, speed, (double)(num_current - last_tick));
 			}
 
 			report_cum_time += diff_sec;
 
 			if (report_cum_time >= report_sec) {
-				printf("BLUB\n");
 				output((double)num_current / (double)num_total,
 					(double)todo * avg);
 
 				report_cum_time = 0.0;
-			} else {
-				printf("BLA report_cum_time %f sec %f\n", report_cum_time, report_sec);
 			}
 
 			next_refresh = num_current +
 				(warmup_mode ? min_granularity : (refresh_sec / avg));
 
-			printf("next @ %ld\n", next_refresh);
+			LOG("next @ %ld\n", next_refresh);
 		} else {
 			has_last = true;
 			next_refresh = num_current + min_granularity;
