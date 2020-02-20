@@ -79,11 +79,10 @@ struct ProgressMeter {
 
 	};
 
-
 private:
 	size_t next_refresh = 0;
 	size_t num_current = 0;
-	const size_t num_total;
+	size_t num_total;
 
 	clock_t last_clock;
 	bool has_last = false;
@@ -177,12 +176,37 @@ public:
 		}
 	}
 
+	void extend_by(size_t ticks) {
+		num_total += ticks;
+	}
+
+	void extend_to(size_t ticks) {
+		num_total = ticks;
+	}
+
+	void reset() {
+		next_refresh = 0;
+		num_current = 0;
+		
+		has_last = false;
+		last_tick = 0;
+		warmup_counter = 0;
+		speed_window.clear();
+		report_cum_time = 0.0;
+	}
+
+	void clear(size_t ticks) {
+		reset();
+		num_total = ticks;
+	}
+
 	virtual void output(double progress, double sec_to_finish) {
 		std::cerr << (int)(progress*100.0) << "% done ... "
 			<< (int)sec_to_finish << " secs to go\n" << std::endl;
 	}
 
-	ProgressMeter(size_t total) : num_total(total) {
+	ProgressMeter(size_t total) {
+		clear(total);
 	}
 };
 
