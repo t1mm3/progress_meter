@@ -4,28 +4,53 @@
 
 static std::vector<char*> allocations;
 
-void task(bool alloc) {
-	int size = rand() % 1024;
-	if (size < 0) {
-		size = -size;
+const size_t max_size = 1024*1024*128;
+const size_t max_alloc = 4;
+
+size_t get_alloc_size() {
+	int size = 0;
+
+	while (!size) {
+		size = rand() % max_alloc;
+		if (size < 0) {
+			size = -size;
+		}
 	}
 
-	if (!size) {
-		return;
+	return size;
+}
+
+size_t task() {
+	int num_alloc = rand() % 8;
+	if (num_alloc < 0) {
+		num_alloc = -num_alloc;
 	}
 
-	char* p = new char[size];
-	allocations.push_back(p);
-	memset(p, 0, size);
+	const size_t size = get_alloc_size();
+
+	for (int i=0; i<num_alloc; i++) {
+		char* p = new char[size];
+		memset(p, 0, size);
+		delete[] p;
+	}
+
+	if (size) {
+		char* p = new char[size];
+		allocations.push_back(p);
+		memset(p, 0, size);
+	}
+	return size;
 }
 
 int main() {
-	size_t num_tasks = 20000;
-	ProgressMeter progress_meter(num_tasks);
+	ProgressMeter progress_meter(max_size);
 
-	for (int i=0; i<num_tasks/2; i++) {
-		task(true);
-		progress_meter();
+	size_t allocated = 0;
+	while (allocated < max_size) {
+		size_t sz = task();
+		progress_meter(sz);
+
+		allocated += sz;
 	}
 
 	for (auto& p : allocations) {

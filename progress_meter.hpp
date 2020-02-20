@@ -97,7 +97,7 @@ private:
 	const double report_sec = 2.0;
 
 	//! Refresh every x secs
-	const double refresh_sec = report_sec / 100.0;
+	const double refresh_sec = std::min(report_sec / 100.0, 0.0020);
 
 	const size_t warmup_iterations = 10;
 	const size_t min_granularity = 1;
@@ -169,8 +169,8 @@ private:
 
 public:
 	// Update progress to the next tick
-	void operator()() {
-		num_current++;
+	void operator()(size_t ticks = 1) {
+		num_current+=ticks;
 
 		if (num_current >= next_refresh) {
 			__refresh();
