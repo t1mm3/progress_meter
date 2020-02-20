@@ -10,7 +10,7 @@
 
 #include <ctime>
 #include <string.h>
-#include <stdio.h>
+#include <iostream>
 
 struct ProgressMeter {
 	template<size_t N, typename T>
@@ -103,6 +103,8 @@ private:
 	void __refresh() {
 		clock_t curr_clock = clock();
 
+		printf("refresh\n");
+
 		if (has_last) {
 			const bool warmup_mode = 
 				warmup_counter < warmup_iterations;
@@ -135,14 +137,19 @@ private:
 			report_cum_time += diff_sec;
 
 			if (report_cum_time >= report_sec) {
+				printf("BLUB\n");
 				output((double)num_current / (double)num_total,
 					(double)todo * avg);
 
 				report_cum_time = 0.0;
+			} else {
+				printf("BLA report_cum_time %f sec %f\n", report_cum_time, report_sec);
 			}
 
 			next_refresh = num_current +
 				(warmup_mode ? min_granularity : (refresh_sec / avg));
+
+			printf("next @ %ld\n", next_refresh);
 		} else {
 			has_last = true;
 			next_refresh = num_current + min_granularity;
@@ -166,7 +173,7 @@ public:
 
 	virtual void output(double progress, double sec_to_finish) {
 		std::cerr << (int)(progress*100.0) << "% done ... "
-			<< (int)sec_to_finish << " secs to go\n";
+			<< (int)sec_to_finish << " secs to go\n" << std::endl;
 	}
 
 	ProgressMeter(size_t total) : num_total(total) {
