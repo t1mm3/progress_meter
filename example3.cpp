@@ -1,4 +1,4 @@
-#include "progress_meter.hpp"
+#include "parallel_progress_meter.hpp"
 #include <vector>
 #include <string.h>
 #include <thread>
